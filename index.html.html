@@ -1,0 +1,2607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarefas Família - Gamificação</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-bottom: 3px solid #667eea;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            white-space: nowrap;
+            color: #333;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 4px solid #667eea;
+        }
+
+        .tab-btn:hover {
+            background: #e8e8e8;
+        }
+
+        .content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: #333;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-right: 5px;
+        }
+
+        .edit-btn {
+            background: #4ecdc4;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-right: 5px;
+        }
+
+        /* TELA DO DIA */
+        .today-container {
+            padding: 20px;
+        }
+
+        .current-time {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* ALERTA DE PROXIMIDADE */
+        .proximity-alert {
+            background: linear-gradient(135deg, #ff6b00 0%, #ff1744 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: proximityPulse 0.6s infinite;
+        }
+
+        @keyframes proximityPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .proximity-alert h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: colorFlash 1s infinite;
+        }
+
+        @keyframes colorFlash {
+            0%, 100% { color: #ffff00; }
+            50% { color: #ffffff; }
+        }
+
+        .proximity-alert .countdown {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .next-task {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .next-task:hover {
+            transform: scale(1.02);
+        }
+
+        .next-task h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .next-task .person {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.3);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .next-task .time {
+            font-size: 1.4em;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .next-task.pulsing {
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .task-actions button {
+            flex: 1;
+            min-width: 100px;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        .task-actions .yes {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .task-actions .delayed {
+            background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
+        }
+
+        .task-actions .no {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .task-actions .skip {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+        }
+
+        .daily-tasks {
+            margin-top: 30px;
+        }
+
+        .daily-tasks h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .task-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 5px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .task-item:hover {
+            background: #f5f5f5;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+            border-left-color: #38ef7d;
+        }
+
+        .task-item.delayed {
+            opacity: 0.7;
+            border-left-color: #f39c12;
+            background: #fff8e1;
+        }
+
+        .task-item.failed {
+            border-left-color: #f45c43;
+        }
+
+        .task-item.pulsing-item {
+            animation: pulse-item 0.6s infinite;
+            background: #fff9e6;
+            border-left-color: #ff9800;
+        }
+
+        @keyframes pulse-item {
+            0%, 100% { background: #fff9e6; }
+            50% { background: #ffeb3b; }
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-info strong {
+            display: block;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .task-info small {
+            color: #888;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .task-status {
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 12px;
+            min-width: 100px;
+            text-align: center;
+            color: white;
+        }
+
+        .task-status.completed {
+            background: #38ef7d;
+        }
+
+        .task-status.delayed {
+            background: #f39c12;
+        }
+
+        .task-status.failed {
+            background: #f45c43;
+        }
+
+        .task-status.pending {
+            background: #667eea;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #333;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .modal-content h3 {
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .modal-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .modal-footer button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .close-modal {
+            background: #999;
+            float: right;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* SCOREBOARD */
+        .scoreboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .score-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .score-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .score-card .score {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .score-card .balance {
+            font-size: 1.2em;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* SEMANA */
+        .week-view {
+            margin-top: 20px;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .day-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .day-card h4 {
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .day-card .day-score {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .day-card .day-date {
+            font-size: 0.8em;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* MÊS */
+        .month-view {
+            margin-top: 20px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-size: 12px;
+            padding: 5px;
+            color: #333;
+        }
+
+        .calendar-day.has-tasks {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* CONFIGURAÇÕES */
+        .settings-section {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            color: #333;
+        }
+
+        .settings-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        /* NOTIFICAÇÃO */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #38ef7d;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification.error {
+            background: #f45c43;
+        }
+
+        .notification.warning {
+            background: #f39c12;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .next-task h2 {
+                font-size: 1.8em;
+            }
+
+            .task-actions {
+                flex-direction: column;
+            }
+
+            .task-actions button {
+                min-width: auto;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab-btn {
+                font-size: 12px;
+                padding: 12px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .proximity-alert {
+                padding: 20px;
+            }
+
+            .proximity-alert h2 {
+                font-size: 2em;
+            }
+
+            .proximity-alert .countdown {
+                font-size: 1.8em;
+            }
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+        }
+
+        .frequency-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .day-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .day-checkbox input {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .frequency-type {
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            color: #0d47a1;
+        }
+
+        .info-box h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #0d47a1;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .points-info {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            color: #bf360c;
+        }
+
+        .points-info h4 {
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+
+        .points-info p {
+            color: #bf360c;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .alert-box {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            color: #c62828;
+        }
+
+        .alert-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .time-remaining {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #f44336;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions button {
+            padding: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .protected-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .protected-section h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .sound-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .sound-preview button {
+            padding: 8px 15px;
+            font-size: 12px;
+            flex: 0 1 auto;
+        }
+
+        .paragrafo-config {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9800;
+            color: #333;
+        }
+
+        .paragrafo-config h4 {
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+
+        .paragrafo-config p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .paragrafo-config code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Tarefas Família</h1>
+            <p>Gamificação de tarefas para toda a família!</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('today')">📅 Hoje</button>
+            <button class="tab-btn" onclick="switchTab('week')">📊 Semana</button>
+            <button class="tab-btn" onclick="switchTab('month')">📈 Mês</button>
+            <button class="tab-btn" onclick="switchTab('people')">👥 Pessoas</button>
+            <button class="tab-btn" onclick="switchTab('tasks')">✓ Tarefas</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Config</button>
+        </div>
+
+        <!-- HOJE -->
+        <div id="today" class="content active">
+            <div class="today-container">
+                <div class="current-time" id="currentTime"></div>
+                
+                <div id="proximityAlertContainer" style="display: none;">
+                    <div class="proximity-alert">
+                        <h2>⚠️ PRÓXIMA TAREFA CHEGANDO!</h2>
+                        <p id="proximityAlertPerson" style="font-size: 1.5em; margin: 10px 0;">Victor</p>
+                        <p id="proximityAlertTask" style="font-size: 1.3em;">Arrumar a cama</p>
+                        <div class="countdown" id="proximityCountdown">05:00</div>
+                        <p>Prepare-se!</p>
+                    </div>
+                </div>
+
+                <div id="nextTaskContainer" class="next-task" onclick="openTaskModal()">
+                    <p style="font-size: 0.9em; opacity: 0.9;">PRÓXIMA TAREFA - CLIQUE PARA VER DETALHES</p>
+                    <div class="person" id="nextPerson">Victor</div>
+                    <h2 id="nextTaskName">Arrumar a cama</h2>
+                    <div class="time" id="nextTaskTime">08:00</div>
+                    <p id="nextTaskPoints">+10 pontos</p>
+                    <div class="task-actions">
+                        <button class="yes" id="btnYes" onclick="completeTask(event)">✓ FEZ!</button>
+                        <button class="delayed" id="btnDelayed" onclick="completeTaskDelayed(event)">⏰ VOu FAZER AGORA!</button>
+                        <button class="no" id="btnNo" onclick="failTask(event)">✗ NÃO FEZ</button>
+                        <button class="skip" onclick="skipTask(event)">PRÓXIMA</button>
+                    </div>
+                </div>
+
+                <div class="scoreboard" id="dailyScoreboard"></div>
+
+                <div class="daily-tasks">
+                    <h3>Tarefas de hoje (clique para detalhes)</h3>
+                    <div id="tasksListToday"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEMANA -->
+        <div id="week" class="content">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Pontuação da Semana</h2>
+            <div class="scoreboard" id="weekScoreboard"></div>
+            <div class="week-view">
+                <h3 style="color: #667eea; margin: 30px 0 15px 0;">Pontos por dia</h3>
+                <div class="days-grid" id="weekDays"></div>
+            </div>
+        </div>
+
+        <!-- MÊS -->
+        <div id="month" class="content">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Pontuação do Mês</h2>
+            <div class="scoreboard" id="monthScoreboard"></div>
+            <div class="month-view">
+                <h3 style="color: #667eea; margin: 30px 0 15px 0;">Calendário</h3>
+                <div class="calendar" id="monthCalendar"></div>
+            </div>
+        </div>
+
+        <!-- PESSOAS -->
+        <div id="people" class="content">
+            <div class="two-column">
+                <div>
+                    <h2 style="color: #667eea; margin-bottom: 20px;">Adicionar Pessoa</h2>
+                    <div class="protected-section">
+                        <h4>🔒 Seção Protegida</h4>
+                        <div class="form-group">
+                            <label>Senha de Administrador</label>
+                            <input type="password" id="adminPasswordPeople" placeholder="Digite a senha">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" id="personName" placeholder="Digite o nome">
+                    </div>
+                    <div class="form-group">
+                        <label>Cor Preferida</label>
+                        <div class="color-picker" id="colorPicker"></div>
+                        <input type="hidden" id="personColor" value="#667eea">
+                    </div>
+                    <button onclick="addPerson()">Adicionar Pessoa</button>
+                </div>
+                <div>
+                    <h2 style="color: #667eea; margin-bottom: 20px;">Pessoas Cadastradas</h2>
+                    <div id="peopleList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAREFAS -->
+        <div id="tasks" class="content">
+            <div class="two-column">
+                <div>
+                    <h2 style="color: #667eea; margin-bottom: 20px;">Adicionar Tarefa</h2>
+                    <div class="protected-section">
+                        <h4>🔒 Seção Protegida</h4>
+                        <div class="form-group">
+                            <label>Senha de Administrador</label>
+                            <input type="password" id="adminPasswordTasks" placeholder="Digite a senha">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Título da Tarefa</label>
+                        <input type="text" id="taskName" placeholder="Ex: Arrumar a cama">
+                    </div>
+                    <div class="form-group">
+                        <label>Pessoa Responsável</label>
+                        <select id="taskPerson">
+                            <option value="">Selecione uma pessoa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Horário da Tarefa</label>
+                        <input type="time" id="taskTime" value="08:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Pontos a Ganhar</label>
+                        <input type="number" id="taskPoints" placeholder="10" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor a Receber (R$)</label>
+                        <input type="number" id="taskValue" placeholder="0" value="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição (opcional)</label>
+                        <textarea id="taskDescription" placeholder="Descreva a tarefa..." rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label><strong>Frequência</strong></label>
+                        <div class="frequency-type">
+                            <label><input type="radio" name="frequencyType" value="daily" checked onchange="updateFrequencyUI()"> Diária</label>
+                        </div>
+                        <div class="frequency-type">
+                            <label><input type="radio" name="frequencyType" value="custom" onchange="updateFrequencyUI()"> Personalizada (dias específicos)</label>
+                        </div>
+                        <div id="customDaysSelector" style="display: none;">
+                            <label>Selecione os dias:</label>
+                            <div class="frequency-selector">
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="0"> Domingo</label>
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="1"> Segunda</label>
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="2"> Terça</label>
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="3"> Quarta</label>
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="4"> Quinta</label>
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="5"> Sexta</label>
+                                <label class="day-checkbox"><input type="checkbox" name="freq-day" value="6"> Sábado</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="addTask()">Adicionar Tarefa</button>
+                </div>
+                <div>
+                    <h2 style="color: #667eea; margin-bottom: 20px;">Tarefas Cadastradas</h2>
+                    <div id="tasksList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONFIGURAÇÕES -->
+        <div id="settings" class="content">
+            <h2 style="color: #667eea; margin-bottom: 20px;">Configurações</h2>
+            
+            <div class="settings-section">
+                <h3>⏰ Aviso de Proximidade de Tarefa</h3>
+                <div class="form-group">
+                    <label>Minutos antes da tarefa para exibir o aviso grande e colorido</label>
+                    <input type="number" id="proximityAlertTime" value="5" min="1" max="30">
+                    <small>Se configurado em 5 minutos, o aviso aparecerá 5 minutos antes da tarefa</small>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>🔊 Tipo de Alarme/Som</h3>
+                <div class="form-group">
+                    <label>Escolha o som do alarme:</label>
+                    <select id="alarmType">
+                        <option value="bell">🔔 Sino (Clássico)</option>
+                        <option value="siren">🚨 Sirene (Alto)</option>
+                        <option value="chime">🎵 Carrilhão (Suave)</option>
+                        <option value="buzz">⚡ Zumbido (Rápido)</option>
+                    </select>
+                </div>
+                <div class="sound-preview">
+                    <button onclick="testAlarm('bell')">Testar Sino</button>
+                    <button onclick="testAlarm('siren')">Testar Sirene</button>
+                    <button onclick="testAlarm('chime')">Testar Carrilhão</button>
+                    <button onclick="testAlarm('buzz')">Testar Zumbido</button>
+                </div>
+            </div>
+
+            <div class="paragrafo-config">
+                <h4>📱 Notificações do Celular e Alarme</h4>
+                <p><strong>Ativar notificações push:</strong></p>
+                <button id="btnNotificationPermission" onclick="requestNotificationPermission()" style="background: #4ecdc4;">🔔 Ativar Notificações</button>
+                <p id="notificationStatus" style="margin-top: 10px; font-size: 12px;"></p>
+                <p style="margin-top: 15px;"><strong>Como funciona:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 5px;">
+                    <li>✅ Notificação automática X minutos antes de cada tarefa</li>
+                    <li>✅ Alarme sonoro ao chegar a hora da tarefa</li>
+                    <li>✅ Funciona mesmo com o app fechado</li>
+                    <li>✅ Requer permissão do navegador</li>
+                </ul>
+            </div>
+
+            <div class="settings-section">
+                <h3>🔐 Senha de Administrador</h3>
+                <div class="form-group">
+                    <label>Configure uma senha para proteger edições</label>
+                    <input type="password" id="adminPassword" placeholder="Crie uma senha">
+                    <small>Esta senha será usada para adicionar/editar pessoas, tarefas e pontos</small>
+                </div>
+                <button onclick="saveAdminPassword()">Definir Senha</button>
+            </div>
+
+            <div class="settings-section">
+                <h3>⏰ Limite de Tempo para Confirmação</h3>
+                <div class="form-group">
+                    <label>Minutos permitidos após o horário agendado</label>
+                    <input type="number" id="confirmationTimeLimit" value="30" min="5" max="240">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>⏰ Penalidade por Atraso</h3>
+                <div class="form-group">
+                    <label>Percentual de pontos perdidos ao fazer com atraso (%)</label>
+                    <input type="number" id="delayPenalty" value="50" min="0" max="100">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>❌ Penalidade por Não Fazer</h3>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enableFailPenalty">
+                        Subtrair pontos quando a tarefa não for feita
+                    </label>
+                </div>
+                <div id="failPenaltySettings" style="display: none;">
+                    <div class="form-group">
+                        <label>Pontos a subtrair</label>
+                        <input type="number" id="failPenalty" value="5" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Notificações e Alarmes</h3>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="enableSound" checked>
+                        Ativar som de alerta
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Antecipar notificação (minutos)</label>
+                    <input type="number" id="notificationAdvance" value="5" min="0" max="30">
+                </div>
+            </div>
+
+            <div class="paragrafo-config">
+                <h4>🌐 Compartilhar com Família - Deploy na Nuvem</h4>
+                <p><strong>Para acessar de qualquer celular em tempo real:</strong></p>
+                <ol style="margin-left: 20px;">
+                    <li>Abra <code>firebase.google.com</code> ou <code>github.com</code></li>
+                    <li>Faça upload deste arquivo HTML</li>
+                    <li>Compartilhe o link com a família</li>
+                    <li>Acesse via qualquer celular/tablet/PC</li>
+                </ol>
+                <p style="margin-top: 10px;"><strong>Opções de Deploy Gratuitas:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 5px;">
+                    <li>📱 <strong>Firebase Hosting</strong> - Melhor para este app</li>
+                    <li>📱 <strong>Vercel</strong> - Rápido e fácil</li>
+                    <li>📱 <strong>Netlify</strong> - Simples e poderoso</li>
+                    <li>📱 <strong>GitHub Pages</strong> - Gratuito permanente</li>
+                </ul>
+            </div>
+
+            <div class="settings-section">
+                <h3>Dados</h3>
+                <button onclick="exportData()" style="background: #667eea; margin-right: 10px;">💾 Exportar Dados</button>
+                <button onclick="document.getElementById('importInput').click()" style="background: #4ecdc4;">📥 Importar Dados</button>
+                <input type="file" id="importInput" style="display: none;" onchange="importData(event)">
+                <button onclick="if(confirm('Tem certeza? Vai apagar TUDO!')) resetData()" style="background: #ff6b6b; margin-top: 10px;">🗑️ Limpar Tudo</button>
+            </div>
+
+            <div class="settings-section">
+                <h3>Informações</h3>
+                <p>Versão 5.0 - Aplicativo de Gamificação de Tarefas com Notificações</p>
+                <p style="margin-top: 10px; color: #888;">Todos os dados são salvos localmente no dispositivo.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE DETALHES DA TAREFA -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeTaskModal()">✕ Fechar</button>
+            <h2 id="modalTaskName">Nome da Tarefa</h2>
+            <h3>Responsável</h3>
+            <p id="modalTaskPerson">-</p>
+            
+            <h3>Horário Agendado</h3>
+            <p id="modalTaskTime">-</p>
+            
+            <h3>Descrição</h3>
+            <p id="modalTaskDescription">Sem descrição</p>
+            
+            <h3>Pontuação</h3>
+            <p>Pontos: <strong id="modalTaskPoints">10</strong></p>
+            <p>Valor (R$): <strong id="modalTaskValue">0.00</strong></p>
+            
+            <h3>Status Atual</h3>
+            <p id="modalTaskStatus">Pendente</p>
+            
+            <div id="timeWarning" style="display: none;" class="alert-box">
+                <strong>⚠️ Aviso de Limite de Tempo:</strong>
+                <p id="timeWarningText"></p>
+                <p class="time-remaining" id="timeRemaining"></p>
+            </div>
+
+            <div class="modal-actions">
+                <button id="modalBtnYes" class="yes" onclick="completeTaskFromModal()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">✓ FEZ!</button>
+                <button id="modalBtnDelayed" class="delayed" onclick="completeTaskDelayedFromModal()" style="background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);">⏰ VOu FAZER AGORA!</button>
+                <button id="modalBtnNo" class="no" onclick="failTaskFromModal()" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">✗ NÃO FEZ</button>
+                <button class="skip" onclick="closeTaskModal()" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">Voltar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDIÇÃO DE TAREFA -->
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeEditModal()">✕ Fechar</button>
+            <h2>Editar Tarefa</h2>
+            
+            <div class="protected-section">
+                <h4>🔒 Seção Protegida</h4>
+                <div class="form-group">
+                    <label>Senha de Administrador</label>
+                    <input type="password" id="editTaskPassword" placeholder="Digite a senha">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Título da Tarefa</label>
+                <input type="text" id="editTaskName">
+            </div>
+            <div class="form-group">
+                <label>Horário da Tarefa</label>
+                <input type="time" id="editTaskTime">
+            </div>
+            <div class="form-group">
+                <label>Pontos a Ganhar</label>
+                <input type="number" id="editTaskPoints">
+            </div>
+            <div class="form-group">
+                <label>Valor a Receber (R$)</label>
+                <input type="number" id="editTaskValue" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <textarea id="editTaskDescription" rows="3"></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <button onclick="saveTaskEdit()" style="background: #38ef7d; color: #333; font-weight: bold;">💾 Salvar Alterações</button>
+                <button onclick="closeEditModal()" style="background: #999;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== DADOS GLOBAIS ==========
+        let app = {
+            people: [],
+            tasks: [],
+            completedTasks: [],
+            enableSound: true,
+            notificationAdvance: 5,
+            alarmType: 'bell',
+            proximityAlertTime: 5,
+            delayPenalty: 50,
+            enableFailPenalty: false,
+            failPenalty: 5,
+            confirmationTimeLimit: 30,
+            enableExternal: false,
+            notificationType: 'webhook',
+            webhookUrl: '',
+            telegramToken: '',
+            telegramChatId: '',
+            adminPassword: '',
+            notificationPermission: false
+        };
+
+        let currentTask = null;
+        let currentEditingTaskId = null;
+
+        // ========== INICIALIZAÇÃO ==========
+        function init() {
+            loadData();
+            setupColorPicker();
+            setupNotificationUI();
+            checkNotificationStatus();
+            updateAll();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(checkUpcomingTasks, 1000);
+            setInterval(checkProximityAlert, 1000);
+            setInterval(updateTodayView, 60000);
+            setInterval(updateButtonStates, 1000);
+            
+            document.getElementById('enableFailPenalty').addEventListener('change', (e) => {
+                document.getElementById('failPenaltySettings').style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            // Registrar Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(getServiceWorkerCode()))
+                    .catch(e => console.log('Service Worker registration failed:', e));
+            }
+        }
+
+        function getServiceWorkerCode() {
+            return `
+                self.addEventListener('push', function(event) {
+                    const options = {
+                        body: event.data ? event.data.text() : 'Você tem uma tarefa!',
+                        icon: '🎮',
+                        badge: '🎮',
+                        vibrate: [200, 100, 200],
+                        sound: 'notification.mp3'
+                    };
+                    event.waitUntil(
+                        self.registration.showNotification('Tarefas Família', options)
+                    );
+                });
+
+                self.addEventListener('notificationclick', function(event) {
+                    event.notification.close();
+                    event.waitUntil(
+                        clients.matchAll({type: 'window'}).then(function(clientList) {
+                            for (let client of clientList) {
+                                if (client.url === '/' && 'focus' in client) {
+                                    return client.focus();
+                                }
+                            }
+                            if (clients.openWindow) {
+                                return clients.openWindow('/');
+                            }
+                        })
+                    );
+                });
+            `;
+        }
+
+        function setupNotificationUI() {
+            const externalCheckbox = document.getElementById('enableExternal');
+            const externalSettings = document.getElementById('externalSettings');
+            
+            externalCheckbox.addEventListener('change', (e) => {
+                externalSettings.style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            document.querySelectorAll('input[name="notificationType"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    document.getElementById('webhookSettings').style.display = e.target.value === 'webhook' ? 'block' : 'none';
+                    document.getElementById('telegramSettings').style.display = e.target.value === 'telegram' ? 'block' : 'none';
+                });
+            });
+        }
+
+        function checkNotificationStatus() {
+            if ('Notification' in window) {
+                const statusEl = document.getElementById('notificationStatus');
+                if (Notification.permission === 'granted') {
+                    statusEl.textContent = '✅ Notificações ativadas';
+                    statusEl.style.color = '#38ef7d';
+                    document.getElementById('btnNotificationPermission').textContent = '✅ Notificações Ativas';
+                    document.getElementById('btnNotificationPermission').disabled = true;
+                    app.notificationPermission = true;
+                } else if (Notification.permission === 'denied') {
+                    statusEl.textContent = '❌ Notificações negadas. Ative nas configurações do navegador.';
+                    statusEl.style.color = '#f45c43';
+                } else {
+                    statusEl.textContent = '⏳ Clique em "Ativar Notificações" para começar';
+                    statusEl.style.color = '#f39c12';
+                }
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showNotification('Seu navegador não suporta notificações', 'error');
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                showNotification('Notificações já ativadas!');
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    app.notificationPermission = true;
+                    checkNotificationStatus();
+                    showNotification('Notificações ativadas! 🎉');
+                    // Teste
+                    new Notification('Tarefas Família', {
+                        body: 'Notificações ativadas com sucesso!',
+                        icon: '🎮'
+                    });
+                } else {
+                    showNotification('Você negou as notificações', 'error');
+                }
+            });
+        }
+
+        // ========== PROTEÇÃO COM SENHA ==========
+        function checkAdminPassword(source) {
+            let password;
+            if (source === 'people') {
+                password = document.getElementById('adminPasswordPeople').value;
+            } else if (source === 'tasks') {
+                password = document.getElementById('adminPasswordTasks').value;
+            } else if (source === 'edit') {
+                password = document.getElementById('editTaskPassword').value;
+            }
+            
+            if (!app.adminPassword) {
+                showNotification('Nenhuma senha configurada. Configure nas Configurações!', 'warning');
+                return true;
+            }
+            
+            if (password !== app.adminPassword) {
+                showNotification('Senha incorreta! Acesso negado.', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function saveAdminPassword() {
+            const password = document.getElementById('adminPassword').value.trim();
+            if (!password) {
+                showNotification('Digite uma senha', 'error');
+                return;
+            }
+            app.adminPassword = password;
+            saveData();
+            document.getElementById('adminPassword').value = '';
+            showNotification('Senha de administrador definida com sucesso!');
+        }
+
+        // ========== ARMAZENAMENTO ==========
+        function saveData() {
+            app.enableSound = document.getElementById('enableSound').checked;
+            app.notificationAdvance = parseInt(document.getElementById('notificationAdvance').value) || 5;
+            app.alarmType = document.getElementById('alarmType').value;
+            app.proximityAlertTime = parseInt(document.getElementById('proximityAlertTime').value) || 5;
+            app.delayPenalty = parseInt(document.getElementById('delayPenalty').value) || 50;
+            app.enableFailPenalty = document.getElementById('enableFailPenalty').checked;
+            app.failPenalty = parseInt(document.getElementById('failPenalty').value) || 5;
+            app.confirmationTimeLimit = parseInt(document.getElementById('confirmationTimeLimit').value) || 30;
+            
+            localStorage.setItem('taskApp', JSON.stringify(app));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('taskApp');
+            if (saved) {
+                app = JSON.parse(saved);
+            } else {
+                app.people = [
+                    { id: 1, name: 'Victor', color: '#FF6B6B' },
+                    { id: 2, name: 'Maria', color: '#4ECDC4' }
+                ];
+                app.tasks = [
+                    { id: 1, name: 'Arrumar a cama', person: 1, time: '08:00', points: 10, value: 0, description: 'Deixar a cama bem arrumada', frequency: 'daily', customDays: [] },
+                    { id: 2, name: 'Fazer a lição', person: 2, time: '14:00', points: 15, value: 0, description: 'Fazer a lição de casa', frequency: 'daily', customDays: [] }
+                ];
+            }
+
+            document.getElementById('enableSound').checked = app.enableSound;
+            document.getElementById('notificationAdvance').value = app.notificationAdvance;
+            document.getElementById('alarmType').value = app.alarmType;
+            document.getElementById('proximityAlertTime').value = app.proximityAlertTime;
+            document.getElementById('delayPenalty').value = app.delayPenalty;
+            document.getElementById('enableFailPenalty').checked = app.enableFailPenalty;
+            document.getElementById('failPenalty').value = app.failPenalty;
+            document.getElementById('failPenaltySettings').style.display = app.enableFailPenalty ? 'block' : 'none';
+            document.getElementById('confirmationTimeLimit').value = app.confirmationTimeLimit;
+        }
+
+        function resetData() {
+            app = {
+                people: [],
+                tasks: [],
+                completedTasks: [],
+                enableSound: true,
+                notificationAdvance: 5,
+                alarmType: 'bell',
+                proximityAlertTime: 5,
+                delayPenalty: 50,
+                enableFailPenalty: false,
+                failPenalty: 5,
+                confirmationTimeLimit: 30,
+                enableExternal: false,
+                notificationType: 'webhook',
+                webhookUrl: '',
+                telegramToken: '',
+                telegramChatId: '',
+                adminPassword: '',
+                notificationPermission: false
+            };
+            localStorage.clear();
+            location.reload();
+        }
+
+        // ========== CORES ==========
+        function setupColorPicker() {
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
+            const picker = document.getElementById('colorPicker');
+            picker.innerHTML = '';
+            colors.forEach(color => {
+                const div = document.createElement('div');
+                div.className = 'color-option';
+                div.style.background = color;
+                div.onclick = () => {
+                    document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+                    div.classList.add('selected');
+                    document.getElementById('personColor').value = color;
+                };
+                picker.appendChild(div);
+            });
+        }
+
+        // ========== PESSOAS ==========
+        function addPerson() {
+            if (!checkAdminPassword('people')) return;
+            
+            const name = document.getElementById('personName').value.trim();
+            const color = document.getElementById('personColor').value;
+            
+            if (!name) {
+                showNotification('Digite o nome da pessoa', 'error');
+                return;
+            }
+
+            const id = Date.now();
+            app.people.push({ id, name, color });
+            saveData();
+            
+            document.getElementById('personName').value = '';
+            document.getElementById('adminPasswordPeople').value = '';
+            updateAll();
+            showNotification(`${name} adicionado(a)!`);
+        }
+
+        function deletePerson(id) {
+            if (!confirm('Tem certeza?')) return;
+            app.people = app.people.filter(p => p.id !== id);
+            app.tasks = app.tasks.filter(t => t.person !== id);
+            saveData();
+            updateAll();
+            showNotification('Pessoa removida!');
+        }
+
+        function updatePeopleList() {
+            const list = document.getElementById('peopleList');
+            list.innerHTML = '';
+            
+            app.people.forEach(person => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 40px; height: 40px; background: ${person.color}; border-radius: 50%;"></div>
+                        <div style="flex: 1;">
+                            <strong style="color: #333;">${person.name}</strong>
+                        </div>
+                        <button class="delete-btn" onclick="deletePerson(${person.id})">×</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            const select = document.getElementById('taskPerson');
+            const currentValue = select.value;
+            select.innerHTML = '<option value="">Selecione uma pessoa</option>';
+            app.people.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.id;
+                option.textContent = person.name;
+                select.appendChild(option);
+            });
+            select.value = currentValue;
+        }
+
+        // ========== TAREFAS ==========
+        function updateFrequencyUI() {
+            const freqType = document.querySelector('input[name="frequencyType"]:checked').value;
+            document.getElementById('customDaysSelector').style.display = freqType === 'custom' ? 'block' : 'none';
+        }
+
+        function addTask() {
+            if (!checkAdminPassword('tasks')) return;
+            
+            const name = document.getElementById('taskName').value.trim();
+            const person = parseInt(document.getElementById('taskPerson').value);
+            const time = document.getElementById('taskTime').value;
+            const points = parseInt(document.getElementById('taskPoints').value) || 10;
+            const value = parseFloat(document.getElementById('taskValue').value) || 0;
+            const description = document.getElementById('taskDescription').value.trim();
+            const freqType = document.querySelector('input[name="frequencyType"]:checked').value;
+            
+            if (!name || !person) {
+                showNotification('Preencha nome e pessoa', 'error');
+                return;
+            }
+
+            let customDays = [];
+            if (freqType === 'custom') {
+                const checkboxes = document.querySelectorAll('input[name="freq-day"]:checked');
+                customDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
+                if (customDays.length === 0) {
+                    showNotification('Selecione pelo menos um dia', 'error');
+                    return;
+                }
+            }
+
+            const id = Date.now();
+            app.tasks.push({ 
+                id, 
+                name, 
+                person, 
+                time,
+                points, 
+                value, 
+                description, 
+                frequency: freqType === 'daily' ? 'daily' : 'custom',
+                customDays 
+            });
+            saveData();
+            
+            document.getElementById('taskName').value = '';
+            document.getElementById('taskPerson').value = '';
+            document.getElementById('taskTime').value = '08:00';
+            document.getElementById('taskPoints').value = '10';
+            document.getElementById('taskValue').value = '0';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('adminPasswordTasks').value = '';
+            document.querySelector('input[name="frequencyType"][value="daily"]').checked = true;
+            document.querySelectorAll('input[name="freq-day"]').forEach(cb => cb.checked = false);
+            updateFrequencyUI();
+            
+            updateAll();
+            showNotification('Tarefa adicionada!');
+        }
+
+        function deleteTask(id) {
+            if (!confirm('Tem certeza?')) return;
+            app.tasks = app.tasks.filter(t => t.id !== id);
+            saveData();
+            updateAll();
+            showNotification('Tarefa removida!');
+        }
+
+        function openEditModal(taskId) {
+            const task = app.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            currentEditingTaskId = taskId;
+            document.getElementById('editTaskName').value = task.name;
+            document.getElementById('editTaskTime').value = task.time;
+            document.getElementById('editTaskPoints').value = task.points;
+            document.getElementById('editTaskValue').value = task.value;
+            document.getElementById('editTaskDescription').value = task.description;
+            document.getElementById('editTaskPassword').value = '';
+            
+            document.getElementById('editTaskModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editTaskModal').classList.remove('active');
+            currentEditingTaskId = null;
+        }
+
+        function saveTaskEdit() {
+            if (!checkAdminPassword('edit')) return;
+            
+            const task = app.tasks.find(t => t.id === currentEditingTaskId);
+            if (!task) return;
+
+            task.name = document.getElementById('editTaskName').value.trim();
+            task.time = document.getElementById('editTaskTime').value;
+            task.points = parseInt(document.getElementById('editTaskPoints').value) || 10;
+            task.value = parseFloat(document.getElementById('editTaskValue').value) || 0;
+            task.description = document.getElementById('editTaskDescription').value.trim();
+
+            saveData();
+            updateAll();
+            closeEditModal();
+            showNotification('Tarefa atualizada!');
+        }
+
+        function updateTasksList() {
+            const list = document.getElementById('tasksList');
+            list.innerHTML = '';
+            
+            app.tasks.forEach(task => {
+                const person = app.people.find(p => p.id === task.person);
+                const div = document.createElement('div');
+                div.className = 'card';
+                const freqText = task.frequency === 'daily' ? 'Diária' : `Personalizada (${task.customDays.length} dias)`;
+                div.innerHTML = `
+                    <strong style="color: #333;">${task.name}</strong>
+                    <small style="display: block; margin-top: 5px; color: #666;">
+                        ${task.time} | ${person ? person.name : 'N/A'}
+                    </small>
+                    <small style="display: block; margin-top: 5px; color: #666;">
+                        ${task.points} pontos | R$ ${task.value.toFixed(2)} | ${freqText}
+                    </small>
+                    <button class="edit-btn" onclick="openEditModal(${task.id})">✏️ Editar</button>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">🗑️ Deletar</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // ========== FUNÇÕES DO DIA ==========
+        function shouldShowTaskToday(task) {
+            if (task.frequency === 'daily') return true;
+            if (task.frequency === 'custom') {
+                const today = new Date().getDay();
+                return task.customDays.includes(today);
+            }
+            return false;
+        }
+
+        function getTasksForToday() {
+            return app.tasks.filter(shouldShowTaskToday).sort((a, b) => a.time.localeCompare(b.time));
+        }
+
+        function getNextTask() {
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const today = new Date().toDateString();
+            const tasksToday = getTasksForToday();
+            
+            if (tasksToday.length === 0) return null;
+            
+            for (let task of tasksToday) {
+                const isLate = task.time < currentTime;
+                const hasAnyCompletion = app.completedTasks.find(ct => 
+                    ct.taskId === task.id && 
+                    new Date(ct.date).toDateString() === today
+                );
+                if (isLate && !hasAnyCompletion) {
+                    return { ...task, isLate: true };
+                }
+            }
+            
+            for (let task of tasksToday) {
+                const hasAnyCompletion = app.completedTasks.find(ct => 
+                    ct.taskId === task.id && 
+                    new Date(ct.date).toDateString() === today &&
+                    ct.status === 'completed'
+                );
+                if (!hasAnyCompletion) {
+                    return { ...task, isLate: false };
+                }
+            }
+            
+            return null;
+        }
+
+        function getNextTaskTime() {
+            const tasksToday = getTasksForToday();
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            for (let task of tasksToday) {
+                if (task.time > currentTime) {
+                    return task;
+                }
+            }
+            return null;
+        }
+
+        function canConfirmTask(task) {
+            const now = new Date();
+            const taskTime = task.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            const limitDate = new Date(taskDate.getTime() + app.confirmationTimeLimit * 60000);
+            
+            return now >= taskDate && now <= limitDate;
+        }
+
+        function canConfirmTaskDelayed(task) {
+            const now = new Date();
+            const taskTime = task.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            
+            return now > taskDate;
+        }
+
+        function getTimeRemainingToConfirm(task) {
+            const now = new Date();
+            const taskTime = task.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            const limitDate = new Date(taskDate.getTime() + app.confirmationTimeLimit * 60000);
+            
+            const diffMs = limitDate - now;
+            if (diffMs <= 0) return 0;
+            return Math.ceil(diffMs / 60000);
+        }
+
+        function getTimeUntilTask(task) {
+            const now = new Date();
+            const taskTime = task.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            
+            const diffMs = taskDate - now;
+            if (diffMs <= 0) return 0;
+            return Math.ceil(diffMs / 60000);
+        }
+
+        function completeTask(e) {
+            if (e) e.stopPropagation();
+            const task = getNextTask();
+            if (!task) return;
+            
+            const today = new Date().toDateString();
+            const alreadyCompleted = app.completedTasks.find(ct =>
+                ct.taskId === task.id &&
+                new Date(ct.date).toDateString() === today &&
+                ct.status === 'completed'
+            );
+
+            if (alreadyCompleted) {
+                showNotification('Esta tarefa já foi marcada como completa!', 'warning');
+                return;
+            }
+            
+            if (!canConfirmTask(task)) {
+                showNotification(`⏰ Tempo limite para confirmação expirou!`, 'error');
+                return;
+            }
+            
+            app.completedTasks.push({
+                taskId: task.id,
+                person: task.person,
+                status: 'completed',
+                points: task.points,
+                date: new Date().toISOString()
+            });
+            
+            saveData();
+            playSound(app.alarmType);
+            showNotification(`✓ ${task.name} concluído! +${task.points} pontos`);
+            updateAll();
+            sendNotification(`${task.name} foi concluído no horário!`, 'completed');
+        }
+
+        function completeTaskDelayed(e) {
+            if (e) e.stopPropagation();
+            const task = getNextTask();
+            if (!task) return;
+            
+            const today = new Date().toDateString();
+            const alreadyCompleted = app.completedTasks.find(ct =>
+                ct.taskId === task.id &&
+                new Date(ct.date).toDateString() === today
+            );
+
+            if (alreadyCompleted) {
+                showNotification('Esta tarefa já foi marcada!', 'warning');
+                return;
+            }
+            
+            if (!canConfirmTaskDelayed(task)) {
+                showNotification(`⏰ A tarefa ainda não chegou ao horário!`, 'error');
+                return;
+            }
+            
+            const penaltyPercent = app.delayPenalty;
+            const pointsEarned = Math.floor(task.points * (100 - penaltyPercent) / 100);
+            const pointsLost = task.points - pointsEarned;
+            
+            app.completedTasks.push({
+                taskId: task.id,
+                person: task.person,
+                status: 'delayed',
+                points: pointsEarned,
+                date: new Date().toISOString()
+            });
+            
+            saveData();
+            playSound(app.alarmType);
+            showNotification(`⏰ ${task.name} feito com atraso! +${pointsEarned} pontos (perdeu ${pointsLost})`, 'warning');
+            updateAll();
+            sendNotification(`${task.name} foi concluído com atraso. Pontos: ${pointsEarned}/${task.points}`, 'delayed');
+        }
+
+        function failTask(e) {
+            if (e) e.stopPropagation();
+            const task = getNextTask();
+            if (!task) return;
+            
+            const today = new Date().toDateString();
+            const alreadyCompleted = app.completedTasks.find(ct =>
+                ct.taskId === task.id &&
+                new Date(ct.date).toDateString() === today
+            );
+
+            if (alreadyCompleted) {
+                showNotification('Esta tarefa já foi marcada!', 'warning');
+                return;
+            }
+            
+            const penaltyPoints = app.enableFailPenalty ? app.failPenalty : 0;
+            
+            app.completedTasks.push({
+                taskId: task.id,
+                person: task.person,
+                status: 'failed',
+                points: -penaltyPoints,
+                date: new Date().toISOString()
+            });
+            
+            saveData();
+            playSound(app.alarmType);
+            if (penaltyPoints > 0) {
+                showNotification(`✗ ${task.name} não foi feito. -${penaltyPoints} pontos`);
+            } else {
+                showNotification(`✗ ${task.name} não foi feito`);
+            }
+            updateAll();
+            sendNotification(`${task.name} não foi realizado`, 'failed');
+        }
+
+        function skipTask(e) {
+            if (e) e.stopPropagation();
+            updateAll();
+            showNotification('Próxima tarefa...');
+        }
+
+        // ========== ATUALIZAR ESTADOS DOS BOTÕES ==========
+        function updateButtonStates() {
+            const task = getNextTask();
+            if (!task) {
+                document.getElementById('btnYes').disabled = true;
+                document.getElementById('btnDelayed').disabled = true;
+                document.getElementById('btnNo').disabled = true;
+                document.getElementById('modalBtnYes').disabled = true;
+                document.getElementById('modalBtnDelayed').disabled = true;
+                document.getElementById('modalBtnNo').disabled = true;
+                return;
+            }
+
+            const now = new Date();
+            const taskTime = task.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            const limitDate = new Date(taskDate.getTime() + app.confirmationTimeLimit * 60000);
+
+            const today = new Date().toDateString();
+            const completed = app.completedTasks.find(ct =>
+                ct.taskId === task.id &&
+                new Date(ct.date).toDateString() === today
+            );
+
+            if (completed) {
+                document.getElementById('btnYes').disabled = true;
+                document.getElementById('btnDelayed').disabled = true;
+                document.getElementById('btnNo').disabled = true;
+                document.getElementById('modalBtnYes').disabled = true;
+                document.getElementById('modalBtnDelayed').disabled = true;
+                document.getElementById('modalBtnNo').disabled = true;
+                return;
+            }
+
+            if (now < taskDate) {
+                document.getElementById('btnYes').disabled = true;
+                document.getElementById('btnDelayed').disabled = true;
+                document.getElementById('btnNo').disabled = true;
+                document.getElementById('modalBtnYes').disabled = true;
+                document.getElementById('modalBtnDelayed').disabled = true;
+                document.getElementById('modalBtnNo').disabled = true;
+            }
+            else if (now <= limitDate) {
+                document.getElementById('btnYes').disabled = false;
+                document.getElementById('btnDelayed').disabled = true;
+                document.getElementById('btnNo').disabled = false;
+                document.getElementById('modalBtnYes').disabled = false;
+                document.getElementById('modalBtnDelayed').disabled = true;
+                document.getElementById('modalBtnNo').disabled = false;
+            }
+            else {
+                document.getElementById('btnYes').disabled = true;
+                document.getElementById('btnDelayed').disabled = false;
+                document.getElementById('btnNo').disabled = false;
+                document.getElementById('modalBtnYes').disabled = true;
+                document.getElementById('modalBtnDelayed').disabled = false;
+                document.getElementById('modalBtnNo').disabled = false;
+            }
+        }
+
+        // ========== ALERTA DE PROXIMIDADE ==========
+        function checkProximityAlert() {
+            const nextTask = getNextTaskTime();
+            const proximityContainer = document.getElementById('proximityAlertContainer');
+            const nextTaskContainer = document.getElementById('nextTaskContainer');
+            
+            if (!nextTask) {
+                proximityContainer.style.display = 'none';
+                return;
+            }
+
+            const now = new Date();
+            const taskTime = nextTask.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            
+            const diffMs = taskDate - now;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+
+            if (diffMins >= 0 && diffMins <= app.proximityAlertTime) {
+                proximityContainer.style.display = 'block';
+                nextTaskContainer.style.display = 'none';
+                
+                const person = app.people.find(p => p.id === nextTask.person);
+                document.getElementById('proximityAlertPerson').textContent = person ? person.name : 'N/A';
+                document.getElementById('proximityAlertTask').textContent = nextTask.name;
+                
+                const mins = String(diffMins).padStart(2, '0');
+                const secs = String(diffSecs).padStart(2, '0');
+                document.getElementById('proximityCountdown').textContent = `${mins}:${secs}`;
+                
+                if (diffMins === app.proximityAlertTime && diffSecs < 10) {
+                    playSound(app.alarmType);
+                    sendProximityNotification(nextTask, diffMins, diffSecs);
+                }
+            } else {
+                proximityContainer.style.display = 'none';
+                nextTaskContainer.style.display = 'block';
+            }
+        }
+
+        function sendProximityNotification(task, mins, secs) {
+            if (!app.notificationPermission) return;
+
+            const person = app.people.find(p => p.id === task.person);
+            const message = `⏰ ${person ? person.name : 'Alguém'} - ${task.name} em ${mins}:${String(secs).padStart(2, '0')}!`;
+            
+            new Notification('Tarefas Família - Aviso de Proximidade', {
+                body: message,
+                icon: '⏰',
+                badge: '⏰',
+                vibrate: [200, 100, 200, 100, 200],
+                requireInteraction: true,
+                tag: 'proximity-' + task.id
+            });
+        }
+
+        // ========== SONS/ALARMES ==========
+        function playSound(type) {
+            if (!app.enableSound) return;
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                switch(type) {
+                    case 'bell':
+                        playBell(audioContext);
+                        break;
+                    case 'siren':
+                        playSiren(audioContext);
+                        break;
+                    case 'chime':
+                        playChime(audioContext);
+                        break;
+                    case 'buzz':
+                        playBuzz(audioContext);
+                        break;
+                }
+            } catch (e) {
+                console.log('Som não disponível');
+            }
+        }
+
+        function playBell(ctx) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 800;
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.5);
+        }
+
+        function playSiren(ctx) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.1);
+            osc.frequency.linearRampToValueAtTime(800, ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.8);
+        }
+
+        function playChime(ctx) {
+            for (let i = 0; i < 3; i++) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 600 + (i * 200);
+                gain.gain.setValueAtTime(0.2, ctx.currentTime + (i * 0.15));
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + (i * 0.15) + 0.3);
+                osc.start(ctx.currentTime + (i * 0.15));
+                osc.stop(ctx.currentTime + (i * 0.15) + 0.3);
+            }
+        }
+
+        function playBuzz(ctx) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 400;
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.3);
+        }
+
+        function testAlarm(type) {
+            const oldType = app.alarmType;
+            app.alarmType = type;
+            playSound(type);
+            app.alarmType = oldType;
+        }
+
+        // ========== MODAL DE TAREFA ==========
+        function openTaskModal() {
+            const task = getNextTask();
+            if (!task) {
+                showNotification('Nenhuma tarefa pendente', 'warning');
+                return;
+            }
+
+            currentTask = task;
+            const person = app.people.find(p => p.id === task.person);
+            const today = new Date().toDateString();
+            const completion = app.completedTasks.find(ct => 
+                ct.taskId === task.id && 
+                new Date(ct.date).toDateString() === today
+            );
+
+            document.getElementById('modalTaskName').textContent = task.name;
+            document.getElementById('modalTaskPerson').textContent = person ? person.name : 'N/A';
+            document.getElementById('modalTaskTime').textContent = task.time;
+            document.getElementById('modalTaskDescription').textContent = task.description || 'Sem descrição';
+            document.getElementById('modalTaskPoints').textContent = task.points;
+            document.getElementById('modalTaskValue').textContent = task.value.toFixed(2);
+
+            let statusText = '⏳ Pendente';
+            if (completion) {
+                if (completion.status === 'completed') {
+                    statusText = '✓ Completo (pontos totais)';
+                } else if (completion.status === 'delayed') {
+                    statusText = '⏰ Com atraso (pontos reduzidos)';
+                } else {
+                    statusText = '✗ Não realizado';
+                }
+            }
+            document.getElementById('modalTaskStatus').textContent = statusText;
+
+            const timeWarning = document.getElementById('timeWarning');
+            if (!completion) {
+                const timeRemaining = getTimeRemainingToConfirm(task);
+                const now = new Date();
+                const taskTime = task.time.split(':');
+                const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                         parseInt(taskTime[0]), parseInt(taskTime[1]));
+                
+                if (now < taskDate) {
+                    const minsUntil = getTimeUntilTask(task);
+                    timeWarning.style.display = 'block';
+                    document.getElementById('timeWarningText').textContent = `Esta tarefa só poderá ser confirmada a partir das ${task.time}`;
+                    document.getElementById('timeRemaining').textContent = `Faltam ${minsUntil} minutos`;
+                } else if (timeRemaining > 0 && timeRemaining <= 10) {
+                    timeWarning.style.display = 'block';
+                    document.getElementById('timeWarningText').textContent = `Você tem poucos minutos para confirmar se completou esta tarefa!`;
+                    document.getElementById('timeRemaining').textContent = `${timeRemaining} minutos restantes`;
+                } else if (timeRemaining <= 0) {
+                    timeWarning.style.display = 'block';
+                    document.getElementById('timeWarningText').textContent = `Tempo limite de ${app.confirmationTimeLimit} minutos expirou! Você pode marcar "VOu FAZER AGORA" ou "NÃO FEZ".`;
+                    document.getElementById('timeRemaining').textContent = 'Tempo encerrado';
+                } else {
+                    timeWarning.style.display = 'none';
+                }
+            } else {
+                timeWarning.style.display = 'none';
+            }
+
+            document.getElementById('taskModal').classList.add('active');
+            updateButtonStates();
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+            currentTask = null;
+        }
+
+        function completeTaskFromModal() {
+            completeTask();
+            closeTaskModal();
+        }
+
+        function completeTaskDelayedFromModal() {
+            completeTaskDelayed();
+            closeTaskModal();
+        }
+
+        function failTaskFromModal() {
+            failTask();
+            closeTaskModal();
+        }
+
+        // ========== NOTIFICAÇÕES EXTERNAS ==========
+        function sendNotification(message, status) {
+            if (!app.enableExternal) return;
+
+            const task = getNextTask();
+            if (!task) return;
+
+            const person = app.people.find(p => p.id === task.person);
+            const fullMessage = `${person ? person.name : 'Alguém'}: ${message}`;
+
+            if (app.notificationType === 'webhook' && app.webhookUrl) {
+                fetch(app.webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        value1: message,
+                        value2: person ? person.name : 'Alguém',
+                        value3: status
+                    })
+                }).catch(e => console.log('Webhook enviado', e));
+            }
+        }
+
+        // ========== VERIFICAÇÃO DE TAREFAS PRÓXIMAS ==========
+        function checkUpcomingTasks() {
+            const task = getNextTask();
+            if (!task) return;
+
+            const now = new Date();
+            const taskTime = task.time.split(':');
+            const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+                                     parseInt(taskTime[0]), parseInt(taskTime[1]));
+            
+            const diffMs = taskDate - now;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins === app.notificationAdvance) {
+                playSound(app.alarmType);
+                showNotification(`📢 ${task.name} em ${app.notificationAdvance} minutos!`);
+                sendNotification(`Preparação: ${task.name} em ${app.notificationAdvance} minutos`, 'upcoming');
+            }
+        }
+
+        // ========== PONTUAÇÃO ==========
+        function getPersonScore(personId, period = 'day') {
+            const now = new Date();
+            let startDate;
+            
+            if (period === 'day') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            } else if (period === 'week') {
+                const d = new Date(now);
+                d.setDate(d.getDate() - d.getDay());
+                startDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            } else if (period === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            }
+            
+            return app.completedTasks
+                .filter(ct => 
+                    ct.person === personId && 
+                    new Date(ct.date) >= startDate
+                )
+                .reduce((sum, ct) => sum + ct.points, 0);
+        }
+
+        function getTotalValue(personId, period = 'day') {
+            const tasks = app.tasks.filter(t => t.person === personId);
+            if (tasks.length === 0) return 0;
+            
+            const score = getPersonScore(personId, period);
+            const task = tasks[0];
+            let tasksCompleted = Math.floor(Math.max(0, score) / task.points);
+            
+            return task.value * tasksCompleted;
+        }
+
+        // ========== ATUALIZAR VISUALIZAÇÕES ==========
+        function updateTodayView() {
+            updateDailyScoreboard();
+            updateTasksListToday();
+            updateNextTask();
+        }
+
+        function updateNextTask() {
+            const task = getNextTask();
+            const container = document.getElementById('nextTaskContainer');
+            
+            if (!task) {
+                container.innerHTML = `
+                    <p style="font-size: 0.9em; opacity: 0.9;">PRÓXIMA TAREFA</p>
+                    <p style="font-size: 1.5em;">🎉</p>
+                    <h2>Parabéns!</h2>
+                    <p>Todas as tarefas foram concluídas!</p>
+                `;
+                container.classList.remove('pulsing');
+                container.style.cursor = 'default';
+                return;
+            }
+            
+            const person = app.people.find(p => p.id === task.person);
+            const personName = person ? person.name : 'N/A';
+            
+            document.getElementById('nextPerson').textContent = personName;
+            document.getElementById('nextTaskName').textContent = task.name;
+            document.getElementById('nextTaskTime').textContent = task.time;
+            document.getElementById('nextTaskPoints').textContent = `+${task.points} pontos`;
+            
+            if (task.isLate) {
+                container.style.background = 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)';
+            } else {
+                container.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+            }
+            
+            container.classList.add('pulsing');
+            container.style.cursor = 'pointer';
+        }
+
+        function updateDailyScoreboard() {
+            const scoreboard = document.getElementById('dailyScoreboard');
+            scoreboard.innerHTML = '';
+            
+            app.people.forEach(person => {
+                const score = getPersonScore(person.id, 'day');
+                const value = getTotalValue(person.id, 'day');
+                
+                const card = document.createElement('div');
+                card.className = 'score-card';
+                card.style.background = `linear-gradient(135deg, ${person.color} 0%, ${adjustColor(person.color, -30)} 100%)`;
+                card.innerHTML = `
+                    <h3>${person.name}</h3>
+                    <div class="score">${score}</div>
+                    <div class="balance">R$ ${value.toFixed(2)}</div>
+                `;
+                scoreboard.appendChild(card);
+            });
+        }
+
+        function updateWeekScoreboard() {
+            const scoreboard = document.getElementById('weekScoreboard');
+            scoreboard.innerHTML = '';
+            
+            app.people.forEach(person => {
+                const score = getPersonScore(person.id, 'week');
+                const value = getTotalValue(person.id, 'week');
+                
+                const card = document.createElement('div');
+                card.className = 'score-card';
+                card.style.background = `linear-gradient(135deg, ${person.color} 0%, ${adjustColor(person.color, -30)} 100%)`;
+                card.innerHTML = `
+                    <h3>${person.name}</h3>
+                    <div class="score">${score}</div>
+                    <div class="balance">R$ ${value.toFixed(2)}</div>
+                `;
+                scoreboard.appendChild(card);
+            });
+
+            updateWeekDays();
+        }
+
+        function updateWeekDays() {
+            const grid = document.getElementById('weekDays');
+            grid.innerHTML = '';
+            
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+            const today = new Date();
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - today.getDay() + i);
+                
+                let dayScore = 0;
+                app.people.forEach(person => {
+                    const dateStr = date.toDateString();
+                    const score = app.completedTasks
+                        .filter(ct => 
+                            ct.person === person.id &&
+                            new Date(ct.date).toDateString() === dateStr
+                        )
+                        .reduce((sum, ct) => sum + ct.points, 0);
+                    dayScore += score;
+                });
+                
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                card.innerHTML = `
+                    <h4>${days[i]}</h4>
+                    <div class="day-score">${dayScore}</div>
+                    <div class="day-date">${date.getDate()}/${date.getMonth() + 1}</div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        function updateMonthScoreboard() {
+            const scoreboard = document.getElementById('monthScoreboard');
+            scoreboard.innerHTML = '';
+            
+            app.people.forEach(person => {
+                const score = getPersonScore(person.id, 'month');
+                const value = getTotalValue(person.id, 'month');
+                
+                const card = document.createElement('div');
+                card.className = 'score-card';
+                card.style.background = `linear-gradient(135deg, ${person.color} 0%, ${adjustColor(person.color, -30)} 100%)`;
+                card.innerHTML = `
+                    <h3>${person.name}</h3>
+                    <div class="score">${score}</div>
+                    <div class="balance">R$ ${value.toFixed(2)}</div>
+                `;
+                scoreboard.appendChild(card);
+            });
+
+            updateMonthCalendar();
+        }
+
+        function updateMonthCalendar() {
+            const calendar = document.getElementById('monthCalendar');
+            calendar.innerHTML = '';
+            
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+            
+            days.forEach(day => {
+                const div = document.createElement('div');
+                div.className = 'calendar-day';
+                div.textContent = day;
+                div.style.fontWeight = 'bold';
+                div.style.background = '#667eea';
+                div.style.color = 'white';
+                calendar.appendChild(div);
+            });
+            
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const div = document.createElement('div');
+                div.className = 'calendar-day';
+                calendar.appendChild(div);
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(now.getFullYear(), now.getMonth(), day);
+                const dateStr = date.toDateString();
+                
+                const hasTask = app.completedTasks.some(ct =>
+                    new Date(ct.date).toDateString() === dateStr
+                );
+                
+                const div = document.createElement('div');
+                div.className = 'calendar-day' + (hasTask ? ' has-tasks' : '');
+                div.textContent = day;
+                calendar.appendChild(div);
+            }
+        }
+
+        function updateTasksListToday() {
+            const list = document.getElementById('tasksListToday');
+            list.innerHTML = '';
+            
+            const today = new Date().toDateString();
+            const tasksToday = getTasksForToday();
+            
+            tasksToday.forEach(task => {
+                const person = app.people.find(p => p.id === task.person);
+                const completion = app.completedTasks.find(ct => 
+                    ct.taskId === task.id && 
+                    new Date(ct.date).toDateString() === today
+                );
+                
+                const div = document.createElement('div');
+                let itemClass = 'task-item';
+                let statusText = 'Pendente';
+                let statusClass = 'pending';
+                
+                if (completion) {
+                    if (completion.status === 'completed') {
+                        itemClass += ' completed';
+                        statusText = '✓ Completo';
+                        statusClass = 'completed';
+                    } else if (completion.status === 'delayed') {
+                        itemClass += ' delayed';
+                        statusText = '⏰ Com atraso';
+                        statusClass = 'delayed';
+                    } else {
+                        itemClass += ' failed';
+                        statusText = '✗ Não feito';
+                        statusClass = 'failed';
+                    }
+                } else {
+                    const now = new Date();
+                    const taskTime = task.time.split(':');
+                    const taskDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                                            parseInt(taskTime[0]), parseInt(taskTime[1]));
+                    if (now > taskDate) {
+                        itemClass += ' pulsing-item';
+                        statusText = '⚠️ ATRASADO';
+                    }
+                }
+                
+                div.className = itemClass;
+                div.onclick = () => openTaskModal();
+                div.innerHTML = `
+                    <div class="task-info">
+                        <strong>${task.name}</strong>
+                        <small>${task.time} | ${person ? person.name : 'N/A'} • ${task.points} pontos</small>
+                    </div>
+                    <div class="task-status ${statusClass}">${statusText}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // ========== RELÓGIO ==========
+        function updateClock() {
+            const time = document.getElementById('currentTime');
+            if (time) {
+                const now = new Date();
+                time.textContent = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        // ========== NOTIFICAÇÕES ==========
+        function showNotification(message, type = 'success') {
+            const notif = document.createElement('div');
+            notif.className = 'notification' + (type === 'error' ? ' error' : type === 'warning' ? ' warning' : '');
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.remove();
+            }, 3000);
+        }
+
+        // ========== UTILITÁRIOS ==========
+        function switchTab(tabName) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'week') updateWeekScoreboard();
+            if (tabName === 'month') updateMonthScoreboard();
+        }
+
+        function adjustColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+                (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+                .toString(16).slice(1);
+        }
+
+        function updateAll() {
+            updatePeopleList();
+            updateTasksList();
+            updateTodayView();
+            updateButtonStates();
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(app, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'tarefa-familia-backup.json';
+            link.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    app = JSON.parse(e.target.result);
+                    saveData();
+                    updateAll();
+                    showNotification('Dados importados com sucesso!');
+                } catch (err) {
+                    showNotification('Erro ao importar dados!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Inicializar ao carregar
+        window.onload = init;
+    </script>
+</body>
+</html>
